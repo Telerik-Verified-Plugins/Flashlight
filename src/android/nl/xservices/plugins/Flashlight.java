@@ -31,6 +31,7 @@ public class Flashlight extends CordovaPlugin {
 
   private static Boolean capable;
   private boolean releasing;
+  private boolean mFixFlashLight = false;
 
   @SuppressWarnings("deprecation")
   private Camera mCamera;
@@ -152,15 +153,14 @@ public class Flashlight extends CordovaPlugin {
   @TargetApi(23)
   private void setTorchMode(CameraManager cameraManager, String id, boolean switchOn) throws CameraAccessException {
     // since folks may not use SDK 23 to compile we'll use reflection as a temporary solution
-    try {
-      final Method setTorchMode = cameraManager.getClass().getMethod("setTorchMode", String.class, boolean.class);
-      setTorchMode.invoke(cameraManager, id, switchOn);
-      callbackContext.success();
-    } catch (ReflectiveOperationException e) {
-      callbackContext.error(e.getMessage());
-    } catch (Throwable t) {
-      callbackContext.error(t.getMessage());
-    }
+    if (mFixFlashLight) {
+            cameraManager.setTorchMode(id, switchOn);
+        } else {
+            if (switchOn) {
+                cameraManager.setTorchMode(id, switchOn);
+            }
+        }
+        mFixFlashLight = switchOn;
   }
 
   public boolean hasPermisssion() {
